@@ -18,8 +18,8 @@ import { cookies, headers } from "next/headers";
  *   - { kind: "invalid", reason: string }
  */
 export type ParsedGoogleId =
-  | { kind: "feature_id"; value: string; name?: string }
-  | { kind: "place_id"; value: string; name?: string }
+  | { kind: "feature_id"; value: string; name?: string; lat?: number; lng?: number }
+  | { kind: "place_id"; value: string; name?: string; lat?: number; lng?: number }
   | { kind: "invalid"; reason: string };
 
 export async function parseGoogleMapsLink(input: string): Promise<ParsedGoogleId> {
@@ -53,6 +53,9 @@ export async function parseGoogleMapsLink(input: string): Promise<ParsedGoogleId
     const name = nameMatch
       ? decodeURIComponent(nameMatch[1].replace(/\+/g, " "))
       : undefined;
+    const coordinateMatch = expanded.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+    const lat = coordinateMatch ? Number(coordinateMatch[1]) : undefined;
+    const lng = coordinateMatch ? Number(coordinateMatch[2]) : undefined;
 
     // Look for Place ID (ChIJ...) first (most portable)
     const placeIdMatch = expanded.match(/[?&]q=ChIJ[A-Za-z0-9_-]+|ChIJ[A-Za-z0-9_-]{20,}|place_id[=:](ChIJ[A-Za-z0-9_-]+)/);
@@ -60,13 +63,13 @@ export async function parseGoogleMapsLink(input: string): Promise<ParsedGoogleId
       const id = placeIdMatch[0].includes("ChIJ")
         ? (placeIdMatch[0].match(/ChIJ[A-Za-z0-9_-]+/) ?? [""])[0]
         : (placeIdMatch[1] ?? "");
-      if (id) return { kind: "place_id", value: id, name };
+      if (id) return { kind: "place_id", value: id, name, lat, lng };
     }
 
     // Fall back to Feature ID (0x...:0x...)
     const featureIdMatch = expanded.match(/0x([a-f0-9]+):0x([a-f0-9]+)/i);
     if (featureIdMatch) {
-      return { kind: "feature_id", value: `0x${featureIdMatch[1]}:0x${featureIdMatch[2]}`, name };
+      return { kind: "feature_id", value: `0x${featureIdMatch[1]}:0x${featureIdMatch[2]}`, name, lat, lng };
     }
 
     return {
@@ -245,9 +248,13 @@ export async function createReviewQr(
       tenantId,
       branchId,
       token,
-      googlePlaceId,
+      googlePlaceId: parsed.value,
       googlePlaceName: parsed.name || null,
-      // Store the original input verbatim when it's a URL (Share link)
+      googlePlaceLat: parsed.lat ?? null,
+      googlePlaceLng: parsed.lng ?? null,
+      // Store the original input verbatim when it's a URL (Share link).
+      // This is the primary redirect target and must never be replaced by
+      // parsed.value, which loses Google app-link metadata.
       googleOriginalUrl: /^https?:\/\//i.test(googlePlaceId.trim()) ? googlePlaceId.trim() : null,
       label: label || null,
       active: 1,
@@ -290,7 +297,9 @@ export async function createReviewQrForTenant(input: {
     return { error: parsed.reason };
   }
 
-  return createReviewQr(tenant.id, input.branchId, parsed.value, input.label ?? "");
+  // Keep the exact link pasted by the owner. Passing parsed.value here used
+  // to discard maps.app.goo.gl metadata and forced fragile URL reconstruction.
+  return createReviewQr(tenant.id, input.branchId, input.googlePlaceId, input.label ?? "");
 }
 
 export async function toggleReviewQr(qrId: string, active: boolean): Promise<{ error?: string }> {

@@ -217,6 +217,11 @@ const INIT_SQL = `
   -- feedback outcome
   ALTER TABLE feedback ADD COLUMN outcome TEXT;
   CREATE INDEX IF NOT EXISTS idx_feedback_outcome ON feedback(outcome);
+  -- review QR redirect URL (legacy DB migration)
+  ALTER TABLE review_qr_tokens ADD COLUMN google_original_url TEXT;
+  -- Canonical coordinates captured from the resolved Google Share link
+  ALTER TABLE review_qr_tokens ADD COLUMN google_place_lat REAL;
+  ALTER TABLE review_qr_tokens ADD COLUMN google_place_lng REAL;
 `;
 
 // Split by semicolons and execute each statement (libsql executeMultiple handles this but tx version requires sync)

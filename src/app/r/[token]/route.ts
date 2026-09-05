@@ -128,57 +128,31 @@ export async function GET(
   }
 
   // Stage 2 (?go=1) or no branch/fallback: go to Google, per-platform handling
-  const placeName = (row as any).googlePlaceName as string | null;
+  const placeName = ((row as any).googlePlaceName || branch?.googlePlaceName || branch?.name) as string | null;
   const placeId = row.googlePlaceId as string;
-
-  // Detect platform from user-agent (header already fetched above for logging)
-  const ua = (await headers()).get("user-agent") ?? "";
-  const isAndroid = /Android/i.test(ua);
-  const isIOS = /iPhone|iPad|iPod/i.test(ua);
-  const isMobile = isAndroid || isIOS;
+  const rowLat = (row as any).googlePlaceLat as number | null;
+  const rowLng = (row as any).googlePlaceLng as number | null;
+  const lat = rowLat ?? branch?.googlePlaceLat ?? null;
+  const lng = rowLng ?? branch?.googlePlaceLng ?? null;
 
   let dest: string;
-  if (originalUrl && originalUrl.includes("maps.app.goo.gl")) {
-    // Owner's verbatim goo.gl Share link — best UX on every platform.
+  if (originalUrl && /^https?:\/\//i.test(originalUrl)) {
+    // Preserve any valid owner-provided Google link verbatim. This includes
+    // maps.app.goo.gl, g.page review links, and future Google formats.
     dest = originalUrl;
-  } else if (isMobile) {
-    // MOBILE: prefer ?cid= link — derived from the Feature ID (0x...:0xHEX →
-    // decimal). This is the ONLY constructible URL that the Android/iOS Maps
-    // app opens DIRECTLY at the place page (no search bar, no results list).
-    // q=place_id: is treated as literal search text by the Android app.
-    const cid = featureIdToCid(placeId);
-    if (cid) {
-      dest = `https://maps.google.com/?cid=${cid}`;
-    } else if (placeName) {
-      dest = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeName)}`;
-    } else {
-      dest = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeId)}`;
-    }
-  } else if (isPlaceId) {
-    // DESKTOP WEB: place page keyed by ID (writereview requires login popup,
-    // which is worse UX on desktop — show the place page instead).
-    dest = `https://www.google.com/maps/place/?q=place_id:${placeId}`;
+  } else if (placeName && lat != null && lng != null) {
+    // Google Maps' current canonical format. Coordinates are essential:
+    // q=place_id and query_place_id are treated as search text by some
+    // Android Maps versions; this path opens the actual place detail page.
+    dest = `https://www.google.com/maps/place/${encodeURIComponent(placeName).replace(/%20/g, "+")}/@${lat},${lng},17z`;
+  } else if (placeName) {
+    // Last resort when this legacy token has no coordinates.
+    dest = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeName)}`;
   } else {
-    // DESKTOP fallback: search by name
-    dest = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeName || placeId)}`;
+    dest = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeId)}`;
   }
 
   return NextResponse.redirect(dest, { status: 302 });
-}
-
-/**
- * Convert a Google Feature ID (0xHEX:0xHEX) to a CID (decimal of the second
- * hex part). The CID can be used in https://maps.google.com/?cid=<decimal>,
- * which native Maps apps open directly at the place page.
- */
-function featureIdToCid(placeId: string): string | null {
-  const m = placeId.match(/^0x[a-f0-9]+:0x([a-f0-9]+)$/i);
-  if (!m) return null;
-  try {
-    return BigInt("0x" + m[1]).toString();
-  } catch {
-    return null;
-  }
 }
 
 function notFoundPage(message: string): NextResponse {
@@ -284,3 +258,4 @@ function escapeHtml(text: string): string {
   };
   return String(text).replace(/[&<>"']/g, (c) => map[c] ?? c);
 }
+

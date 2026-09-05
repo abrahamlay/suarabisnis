@@ -377,6 +377,8 @@ function CreateQrForm({
       }
       if (res.success && res.token) {
         setCreated({ token: res.token, placeId: mapsLink.trim(), label: label.trim() || null });
+        // Close/refresh is handled by the parent after the QR preview; keeping
+        // the original input here also makes the preview/test link accurate.
         setSubmitting(false);
       }
     } catch (err) {
@@ -448,13 +450,13 @@ function CreateQrForm({
           type="text"
           value={mapsLink}
           onChange={(e) => setMapsLink(e.target.value)}
-          placeholder="https://maps.app.goo.gl/... atau Place ID (ChIJ...)"
+          placeholder="Paste link Share Google Maps (maps.app.goo.gl/...)"
           required
           className="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none text-sm"
         />
         <p className="text-xs text-slate-500 mt-1.5">
-          Buka bisnis Anda di Google Maps → tombol <strong>Bagikan</strong> → <strong>Salin link</strong> → paste di sini.
-          Place ID (ChIJ...) juga bisa.
+          Buka profil bisnis yang benar di Google Maps → <strong>Bagikan</strong> → <strong>Salin link</strong> → paste di sini.
+          Link Share asli paling stabil untuk Android, iOS, dan browser.
         </p>
       </div>
 
