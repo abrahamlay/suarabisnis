@@ -1,0 +1,121 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import Link from "next/link";
+import { MessageSquare, AlertCircle, Loader2, Store, ArrowLeft } from "lucide-react";
+import { tenantLoginAction } from "./actions";
+
+type Props = {
+  tenantSlug: string;
+  tenantName: string;
+  tenantLogo: string | null;
+};
+
+export default function TenantLoginForm({ tenantSlug, tenantName, tenantLogo }: Props) {
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    const fd = new FormData(e.currentTarget);
+    startTransition(async () => {
+      const result = await tenantLoginAction(tenantSlug, fd);
+      if (result?.error) setError(result.error);
+    });
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50 flex items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        {/* Tenant branding — top of card */}
+        <div className="text-center mb-6">
+          {tenantLogo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={tenantLogo}
+              alt={tenantName}
+              className="w-16 h-16 rounded-2xl object-cover mx-auto mb-3 border-2 border-white shadow-sm"
+            />
+          ) : (
+            <div className="w-16 h-16 bg-gradient-to-br from-sky-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-sm">
+              <Store className="w-8 h-8 text-white" />
+            </div>
+          )}
+          <h1 className="text-xl font-bold text-slate-900">{tenantName}</h1>
+          <p className="text-slate-500 text-sm mt-0.5">Dashboard Admin</p>
+        </div>
+
+        {/* Card */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+          <div className="mb-6">
+            <h2 className="text-xl font-bold mb-1">Masuk ke Dashboard</h2>
+            <p className="text-slate-600 text-sm">Gunakan akun owner/staff {tenantName}</p>
+          </div>
+
+          {error && (
+            <div className="mb-4 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium mb-1.5">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                autoComplete="email"
+                placeholder="owner@bisnis.com"
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium mb-1.5">Kata Sandi</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                autoComplete="current-password"
+                placeholder="••••••••"
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none transition"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={pending}
+              className="w-full bg-slate-900 text-white py-2.5 rounded-lg font-medium hover:bg-slate-800 disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {pending ? <><Loader2 className="w-4 h-4 animate-spin" /> Memproses...</> : "Masuk"}
+            </button>
+          </form>
+        </div>
+
+        {/* Helper links */}
+        <div className="mt-6 space-y-2 text-center text-sm">
+          <p className="text-slate-600">
+            Bukan owner {tenantName}?{" "}
+            <Link href="/" className="text-sky-600 hover:underline font-medium">
+              Cari bisnis lain
+            </Link>
+          </p>
+          <p className="text-xs text-slate-500">
+            <Link href="/" className="hover:text-slate-900 inline-flex items-center gap-1">
+              <ArrowLeft className="w-3 h-3" /> Beranda SuaraBisnis
+            </Link>
+          </p>
+        </div>
+
+        {/* SaaS branding bottom */}
+        <div className="mt-8 flex items-center justify-center gap-2 text-xs text-slate-400">
+          <MessageSquare className="w-3 h-3" />
+          <span>Ditenagai oleh SuaraBisnis</span>
+        </div>
+      </div>
+    </div>
+  );
+}
