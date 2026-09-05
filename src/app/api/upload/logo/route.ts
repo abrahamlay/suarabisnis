@@ -12,7 +12,10 @@ const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"]
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.json();
+    const formData = await req.json().catch(() => null);
+    if (!formData || typeof formData !== "object") {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
     const { tenantSlug, dataUrl, fileName, mimeType } = formData as {
       tenantSlug: string;
       dataUrl: string; // base64 data URL
