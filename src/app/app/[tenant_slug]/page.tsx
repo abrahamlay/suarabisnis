@@ -77,7 +77,7 @@ export default async function DashboardHome({
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-bold">
-              Halo, {session.name?.split(" ")[0] ?? "Owner"} 👋
+              Halo, {session.name?.split(" ")[0] ?? "Owner"}
             </h1>
             <p className="text-slate-600 mt-1">
               Berikut ringkasan bisnis <strong>{tenant.name}</strong> hari ini.
@@ -87,7 +87,7 @@ export default async function DashboardHome({
         </div>
       </div>
 
-      {/* Quick stats */}
+      {/* Quick stats: operational state first, not decorative vanity metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard icon={<Inbox className="w-5 h-5" />} label="Total Feedback" value={stats.total} color="slate" />
         <StatCard icon={<AlertCircle className="w-5 h-5" />} label="Belum Ditangani" value={stats.open} color="red" />
@@ -199,9 +199,9 @@ export default async function DashboardHome({
 
       {/* Subscription hint for free plan */}
       {plan === "free" && (
-        <div className="bg-gradient-to-br from-sky-500 to-blue-600 text-white rounded-xl p-6 flex items-start justify-between gap-4 flex-wrap">
+        <div className="bg-slate-900 text-white rounded-xl p-6 flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h3 className="font-bold text-lg mb-1">Tingkatkan ke Basic 🚀</h3>
+            <h3 className="font-bold text-lg mb-1">Tingkatkan ke Basic</h3>
             <p className="text-sky-100 text-sm">
               Unlock Google Review QR, multi-cabang, dan email notifikasi hanya Rp 99rb/bulan.
             </p>

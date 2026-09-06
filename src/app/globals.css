@@ -3,10 +3,35 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --sb-background: #fffbeb;
+    --sb-foreground: #0f172a;
+    --sb-primary: #f59e0b;
+    --sb-success: #16a34a;
+    --sb-warning: #d97706;
+    --sb-danger: #dc2626;
+    --sb-border: #faeee1;
+  }
+
   html {
     -webkit-tap-highlight-color: transparent;
   }
+
   body {
     @apply bg-slate-50 text-slate-900 antialiased;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--sb-primary);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

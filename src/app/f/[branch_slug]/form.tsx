@@ -142,7 +142,7 @@ export default function FeedbackForm({
       <div
         className="min-h-screen flex items-center justify-center p-6"
         style={{
-          background: `linear-gradient(135deg, ${primaryColor}08 0%, #fff 50%, ${primaryColor}10 100%)`,
+          background: "#fffbeb",
         }}
       >
         <div className="max-w-md w-full bg-white rounded-2xl p-8 shadow-sm text-center">
@@ -180,7 +180,7 @@ export default function FeedbackForm({
       <div
         className="min-h-screen flex items-center justify-center p-6"
         style={{
-          background: `linear-gradient(135deg, ${primaryColor}08 0%, #fff 50%, ${primaryColor}10 100%)`,
+          background: "#fffbeb",
         }}
       >
         <div className="max-w-md w-full bg-white rounded-2xl p-8 shadow-sm text-center">
@@ -227,7 +227,7 @@ export default function FeedbackForm({
             }}
             disabled={submitting}
             className="inline-flex items-center justify-center gap-2 w-full text-white py-3 rounded-lg font-medium hover:opacity-90 disabled:opacity-50"
-            style={{ backgroundColor: primaryColor }}
+            style={{ backgroundColor: "#16a34a" }}
           >
             <Star className="w-4 h-4 fill-yellow-300 text-yellow-300" />
             {submitting ? "Menyimpan..." : "Beri Review di Google"}
@@ -312,7 +312,7 @@ export default function FeedbackForm({
     <div
       className="min-h-screen"
       style={{
-        background: `linear-gradient(135deg, ${primaryColor}08 0%, #fff 50%, ${primaryColor}10 100%)`,
+        background: "#fffbeb",
       }}
     >
       {/* Header */}
@@ -407,7 +407,7 @@ export default function FeedbackForm({
                 aria-label={`Rating ${n} dari 5`}
               >
                 <Star
-                  className={`w-10 h-10 ${n <= (hoverRating || rating) ? "fill-yellow-400 text-yellow-400" : "text-slate-300"}`}
+                  className={`w-10 h-10 ${n <= (hoverRating || rating) ? "fill-amber-400 text-amber-500" : "text-slate-300"}`}
                 />
               </button>
             ))}
